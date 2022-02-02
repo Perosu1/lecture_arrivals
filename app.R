@@ -25,7 +25,9 @@ ui <- fluidPage(
             downloadButton("download_plot", "Download .png"),
             p(' '),
             tags$a(href="https://github.com/Perosu1/lecture_arrivals/blob/master/app.R", 
-                   "Check out the code on Github!")
+                   "Check out the code on Github!"),
+            tags$a(href="https://github.com/Perosu1/lecture_arrivals#readme", 
+                   "changes in v. 0.3")
             
             
             
