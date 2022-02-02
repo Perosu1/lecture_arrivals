@@ -1,6 +1,5 @@
 library(ggplot2)
 library(shiny)
-library(gridExtra)
 
 #-----------------------------------------------
 
@@ -9,7 +8,7 @@ date <- Sys.Date()
 #-------------------------------------------------
 
 ui <- fluidPage(
-    titlePanel(paste("Lecture Arrivals on", date, '| version 0.2')),
+    titlePanel(paste("Lecture Arrivals on", date, '| version 0.3')),
     sidebarLayout(
         sidebarPanel(
             actionButton("plot", "START APP"),
@@ -25,7 +24,11 @@ ui <- fluidPage(
             downloadButton("download_data", "Download .csv"),
             downloadButton("download_plot", "Download .png"),
             p(' '),
-            p('v 0.2 changes: Added download buttons, lecture arrival recording')
+            tags$a(href="https://github.com/Perosu1/lecture_arrivals/blob/master/app.R", 
+                   "Check out the code on Github!")
+            
+            
+            
             
         ),
         mainPanel(
@@ -72,7 +75,7 @@ server <- function(input, output) {
             labs(
                 title = paste('Lecture arrivals on', date),
                 subtitle = 'red = lecture start, blue = average arrival',
-                caption = 'by Peter Kenda',
+                caption = 'Built in RShiny by Peter Kenda',
             ) +
             xlab('Time') +
             ylab('Student Arrivals') +
