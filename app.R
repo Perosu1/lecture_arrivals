@@ -1,26 +1,31 @@
 library(ggplot2)
 library(shiny)
+library(gridExtra)
+
 #-----------------------------------------------
-#------------------
 
 date <- Sys.Date()
-
 
 #-------------------------------------------------
 
 ui <- fluidPage(
-    titlePanel(paste("Lecture Arrivals on", date, '| version 0.1')),
+    titlePanel(paste("Lecture Arrivals on", date, '| version 0.2')),
     sidebarLayout(
         sidebarPanel(
             actionButton("plot", "START APP"),
             actionButton("arrival", "Record Arrival"),
             actionButton("lecture", "Record Lecture Start"),
-            #numericInput("binwidth", 'binwidth', 60, 1, 120),
             sliderInput("binwidth", 'binwidth', 1, 120, 60, step = 1, round = FALSE,
                         ticks = FALSE, animate = FALSE,
                         width = NULL, sep = ",", pre = NULL, post = NULL, timeFormat = NULL,
                         timezone = NULL, dragRange = TRUE),
-            textOutput("text1")
+            textOutput("numpeople"),
+            textOutput("lectstarttext"),
+            p(' '),
+            downloadButton("download_data", "Download .csv"),
+            downloadButton("download_plot", "Download .png"),
+            p(' '),
+            p('v 0.2 changes: Added download buttons, lecture arrival recording')
             
         ),
         mainPanel(
@@ -37,7 +42,12 @@ server <- function(input, output) {
     timestamps <- reactiveValues()
     timestamps$values <- c(Sys.time())
     
-    lecture_start <- reactiveVal(0)
+    
+    lecture <- reactiveValues()
+    lecture$a <- Sys.time()-1000
+    
+    #lecture_start <-  reactiveValues
+    #lecture_start$values <- (Sys.time())
     
     ########################  lecture_start <- 0
     
@@ -48,42 +58,64 @@ server <- function(input, output) {
     }
     
     lectstart <- function() {
-        lecture_start <- Sys.time()
-        print(lecture_start)
+        lecture$a <- Sys.time()
+        print(lecture$a)
     } 
     
     plot <- function() {
-        mean <- mean(timestamps$values)
         df <- data.frame(timestamps$values)
         df |>  
             ggplot(aes(timestamps$values)) +
             geom_histogram(binwidth = input$binwidth) + #############change this to 60
-            #geom_vline(aes(xintercept = lecture_start$values[1]), color = 'red', size = 1) +
-            geom_vline(aes(xintercept = mean), color = 'blue', size = 1) +
-            geom_hline(yintercept = 0) +
+            geom_vline(aes(xintercept = mean(timestamps$values)), color = 'blue', size = 1) +
+            geom_vline(aes(xintercept = as.numeric(lecture$a)), color = 'red', size = 1) +
             labs(
-                caption = 'blue is average | designed by Peter Kenda'
+                title = paste('Lecture arrivals on', date),
+                subtitle = 'red = lecture start, blue = average arrival',
+                caption = 'by Peter Kenda',
             ) +
             xlab('Time') +
-            ylab('Student Arrivals')
+            ylab('Student Arrivals') +
+            theme_bw() +
+            theme(plot.title = element_text(hjust = 0.5)) 
         
+        # could add density - as here https://datavizpyr.com/histograms-with-ggplot2-in-r/
+        #df |> 
+        #    ggplot(aes(timestamps$values)) +
+        #    geom_density() -> plot_2
+        
+        #grid.arrange(plot_1, plot_2, nrow = 2)
+            
     }
     
-    
     #------------------
+
     
     observeEvent(input$arrival, {
         count()
-        output$text1 <- renderText(c(length(timestamps$values), 'people in lecture'))
+        output$numpeople <- renderText(c(length(timestamps$values), 'people in lecture'))
     })
     
-    observeEvent(input$lecture, {lectstart()})
+    observeEvent(input$lecture, {
+        lectstart()
+        output$lectstarttext <- renderText(c('Lecture started at', as.character.POSIXt(lecture$a, format="%H:%M:%OS")))
+        })
     
     observeEvent(input$plot, {output$graph <- renderPlot({plot()})})
+    
+    output$download_data <- downloadHandler(
+        filename = function() {paste('data-',Sys.Date(),".csv", sep="")},
+        content = function(file) {write.csv(data.frame(timestamps$values), file, row.names = FALSE)}
+    )
+    
+    output$download_plot <- downloadHandler(
+        filename = function() {paste('plot-',Sys.Date(),".png", sep="")},
+        content = function(file) {ggsave(file, plot = last_plot(), device = "png")
+        }
+    )
+    
 }
 
 #-------------------------------------------------
 
 shinyApp(ui = ui, server = server)
-
-

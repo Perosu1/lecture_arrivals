@@ -1,0 +1,14 @@
+name: lecture_arrivals
+title: lecture_arrivals
+username:
+account: perosu1
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5539555
+bundleId: 5536128
+url: https://perosu1.shinyapps.io/lecture_arrivals/
+when: 1643829395.00181
+lastSyncTime: 1643829395.00181
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: plot-2022-02-02.png
